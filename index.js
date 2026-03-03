@@ -24,6 +24,9 @@ function processCommand(command) {
         default:
             console.log('wrong command');
             break;
+        case 'important':
+            showImportant();
+            break;
     }
 }
 
@@ -34,4 +37,11 @@ for (let file of files) {
         let end_pos = file.indexOf("\r\n", start_pos + 1);
         allComments.push(file.slice(start_pos, end_pos));
     }
+}
+
+function showImportant() {
+    const important = allComments.filter(comment => {
+        return comment.trim().endsWith('!');
+    });
+    console.log(important);
 }
