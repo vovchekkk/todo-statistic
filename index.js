@@ -39,10 +39,32 @@ function processCommand(command) {
                 console.log('Please provide username');
             }
             break;
+        case 'date':
+            arg ? filterByDate(arg) : console.log('Please provide a date (yyyy-mm-dd)');
+            break;
     }
 }
 
-let users = []
+function filterByDate(dateLimitStr) {
+    const limitDate = new Date(dateLimitStr);
+
+    if (isNaN(limitDate.getTime())) {
+        console.log('Invalid date format');
+        return;
+    }
+
+    const filtered = allComments.filter(comment => {
+        const parts = comment.split(';');
+        if (parts.length < 3) return false;
+
+        const dateStr = parts[1].trim();
+        const commentDate = new Date(dateStr);
+
+        return !isNaN(commentDate.getTime()) && commentDate >= limitDate;
+    });
+
+    console.log(filtered);
+}
 
 function sortComments(arg) {
     let sorted = [...allComments];
@@ -102,17 +124,15 @@ function sortComments(arg) {
 }
 
 for (let file of files) {
-    let start_pos = -1;
-    while ((start_pos = file.indexOf("// TODO ", start_pos + 1)) !== -1) {
-        let charBefore = file[start_pos - 1];
-        if (charBefore === "'" || charBefore === '"' || charBefore === '`') {
-            continue;
+    const lines = file.split('\r\n');
+
+    for (let line of lines) {
+
+        const match = line.match(/(?<!['"`])\/\/ *todo[: ]? *(.*)/i);
+
+        if (match) {
+            allComments.push(match[0].trim());
         }
-
-        let end_pos = file.indexOf("\r\n", start_pos);
-        if (end_pos === -1) end_pos = file.length;
-
-        allComments.push(file.slice(start_pos, end_pos));
     }
 }
 
