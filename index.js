@@ -14,7 +14,10 @@ function getFiles() {
 let allComments = []
 
 function processCommand(command) {
-    switch (command) {
+    const parts = command.split(' ');
+    const action = parts[0];     
+    const argument = parts[1];
+    switch (action) {
         case 'exit':
             process.exit(0);
             break;
@@ -26,6 +29,13 @@ function processCommand(command) {
             break;
         case 'important':
             showImportant();
+            break;
+        case 'user':
+            if (argument) {
+                user(argument);
+            } else {
+                console.log('Please provide username');
+            }
             break;
     }
 }
@@ -41,7 +51,24 @@ for (let file of files) {
 
 function showImportant() {
     const important = allComments.filter(comment => {
-        return comment.trim().endsWith('!');
+        return comment.endsWith('!');
     });
     console.log(important);
+}
+
+function user(username) {
+    for (let item of allComments) {
+        const content = item.replace('// TODO ', '');
+        const parts = content.split(';');
+
+        if (parts.length < 3) continue;
+
+        const commentUser = parts[0];
+        const date = parts[1];     
+        const text = parts.slice(2).join(';');
+
+        if (commentUser.toLowerCase() === username.toLowerCase()) {
+            console.log(item);
+        }
+    }
 }
