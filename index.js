@@ -11,10 +11,15 @@ function getFiles() {
     return filePaths.map(path => readFile(path));
 }
 
+let allComments = []
+
 function processCommand(command) {
     switch (command) {
         case 'exit':
             process.exit(0);
+            break;
+        case 'show':
+            console.log(allComments)
             break;
         default:
             console.log('wrong command');
@@ -22,4 +27,11 @@ function processCommand(command) {
     }
 }
 
-// TODO you can do it!
+
+let start_pos = -1;
+for (let file of files) {
+    while ((start_pos = file.indexOf("// TODO ", start_pos + 1)) !== -1) {
+        let end_pos = file.indexOf("\r\n", start_pos + 1);
+        allComments.push(file.slice(start_pos, end_pos));
+    }
+}
