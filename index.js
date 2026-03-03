@@ -24,20 +24,71 @@ function processCommand(command) {
             console.log(allComments);
             break;
         case 'sort':
-            sortComments(arg);
+            console.log(sortComments(arg));
+            break;
         default:
             console.log('wrong command');
             break;
     }
 }
 
+let users = []
+
 function sortComments(arg) {
     let sorted = [...allComments];
 
     switch (arg) {
         case 'importance':
+            const getPriority = (text) => text.split('!').length - 1;
+            sorted.sort((a, b) => getPriority(b) - getPriority(a));
+            break;
+        case 'user':
+            const withUser = [];
+            const withoutUser = [];
 
+            const getName = (s) => {
+                const p = s.split('; ');
+                return p.length > 1 ? p[0].replace('// TODO ', '').trim() : null;
+            };
+
+            for (const todo of allComments) {
+                const name = getName(todo);
+                if (name) {
+                    withUser.push({ name: name.toLowerCase(), text: todo });
+                } else {
+                    withoutUser.push(todo);
+                }
+            }
+
+            withUser.sort((a, b) => a.name.localeCompare(b.name));
+
+            sorted = [...withUser.map(item => item.text), ...withoutUser];
+            break;
+        case 'date':
+            sorted.sort((a, b) => {
+                const parseDate = (s) => {
+                    const p = s.split('; ');
+                    if (p.length > 1) {
+                        const dateStr = p[1].trim();
+                        const d = new Date(dateStr);
+                        return isNaN(d.getTime()) ? null : d;
+                    }
+                    return null;
+                };
+
+                const dateA = parseDate(a);
+                const dateB = parseDate(b);
+
+                if (dateA === null && dateB === null) return 0;
+                if (dateA === null) return 1;
+                if (dateB === null) return -1;
+
+                return dateB - dateA;
+            });
+            break;
     }
+
+    return sorted;
 }
 
 for (let file of files) {
@@ -54,8 +105,6 @@ for (let file of files) {
         allComments.push(file.slice(start_pos, end_pos));
     }
 }
-
-processCommand('show')
 
 function showImportant() {
     const important = allComments.filter(comment => {
